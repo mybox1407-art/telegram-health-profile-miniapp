@@ -137,6 +137,8 @@
       margin-top: 14px;
       font-size: 15px;
       color: #6b7280;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .status.error {
@@ -517,11 +519,19 @@
         method: 'GET'
       });
 
-      if (!response.ok) {
-        throw new Error('Ошибка загрузки городов!');
+      const rawText = await response.text();
+      let result = null;
+
+      try {
+        result = rawText ? JSON.parse(rawText) : null;
+      } catch (e) {
+        throw new Error(`GET CITIES: сервер вернул не JSON. Ответ: ${rawText}`);
       }
 
-      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(`GET CITIES HTTP ${response.status}: ${rawText}`);
+      }
+
       const cities = Array.isArray(result)
         ? result
         : (Array.isArray(result.cities) ? result.cities : []);
@@ -578,11 +588,18 @@
           })
         });
 
-        if (!response.ok) {
-          throw new Error('Ошибка загрузки анкеты');
+        const rawText = await response.text();
+        let result = null;
+
+        try {
+          result = rawText ? JSON.parse(rawText) : null;
+        } catch (e) {
+          throw new Error(`GET PROFILE: сервер вернул не JSON. Ответ: ${rawText}`);
         }
 
-        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(`GET PROFILE HTTP ${response.status}: ${rawText}`);
+        }
 
         if (!result || result.found !== true || !result.profile) {
           setStatus('');
@@ -593,13 +610,13 @@
         setStatus('');
       } catch (error) {
         console.error(error);
-        setStatus('Не удалось загрузить анкету из базы!', true);
+        setStatus(`Ошибка загрузки анкеты: ${error.message}`, true);
       }
     }
 
     function buildPayload() {
       return {
-        user_id: els.user_id.value ? Number(els.user_id.value) : null,
+        telegram_id: els.user_id.value ? Number(els.user_id.value) : null,
         username: els.username.value.trim(),
         city: cityUI.hiddenInput.value,
         fullname: els.fullname.value.trim(),
@@ -613,7 +630,7 @@
     }
 
     function validatePayload(payload) {
-      if (!payload.user_id) return 'Не удалось определить Telegram ID. Откройте форму из Telegram.';
+      if (!payload.telegram_id) return 'Не удалось определить Telegram ID. Откройте форму из Telegram.';
       if (!payload.username) return 'Не удалось определить username Telegram.';
       if (!payload.city) return 'Выберите город.';
       if (!payload.fullname) return 'Введите имя.';
@@ -647,14 +664,27 @@
           body: JSON.stringify(payload)
         });
 
+        const rawText = await response.text();
+        let result = null;
+
+        try {
+          result = rawText ? JSON.parse(rawText) : null;
+        } catch (e) {
+          throw new Error(`SAVE PROFILE: сервер вернул не JSON. Ответ: ${rawText}`);
+        }
+
         if (!response.ok) {
-          throw new Error('Ошибка при сохранении анкеты');
+          throw new Error(`SAVE PROFILE HTTP ${response.status}: ${rawText}`);
+        }
+
+        if (result && result.success === false) {
+          throw new Error(result.message || 'Сервер вернул success=false');
         }
 
         setStatus('Анкета успешно сохранена!');
       } catch (error) {
-        console.error(error);
-        setStatus('Не удалось сохранить анкету!', true);
+        console.error('SAVE ERROR:', error);
+        setStatus(`Ошибка сохранения: ${error.message}`, true);
       } finally {
         els.submitBtn.disabled = false;
       }
@@ -672,7 +702,7 @@
       } catch (error) {
         console.error(error);
         cityUI.triggerText.textContent = 'Не удалось загрузить города!';
-        setStatus('Не удалось загрузить список городов!', true);
+        setStatus(`Ошибка загрузки городов: ${error.message}`, true);
         return;
       }
 
