@@ -238,7 +238,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Анкета</h1>
+    <h1>Анкета пользователя</h1>
     <p class="subtitle">Заполните базовую информацию о себе</p>
 
     <div id="browserNotice" class="notice">
@@ -247,17 +247,17 @@
 
     <form id="profileForm">
       <div class="form-group">
-        <label for="user_id">🆔 Telegram ID</label>
+        <label for="user_id">🆔 Telegram ID:</label>
         <input type="text" id="user_id" readonly />
       </div>
 
       <div class="form-group">
-        <label for="username">@ Username Telegram</label>
+        <label for="username">@ Username Telegram:</label>
         <input type="text" id="username" readonly />
       </div>
 
       <div class="form-group">
-        <label for="city_search">🌆 Город</label>
+        <label for="city_search">🌆 Город:</label>
 
         <div class="custom-select" id="citySelect">
           <div class="custom-select-trigger" id="cityTrigger" tabindex="0">
@@ -281,12 +281,12 @@
       </div>
 
       <div class="form-group">
-        <label for="fullname">👤 Имя</label>
+        <label for="fullname">👤 Имя:</label>
         <input type="text" id="fullname" placeholder="Введите имя" required />
       </div>
 
       <div class="form-group">
-        <label for="gender">⚧ Пол</label>
+        <label for="gender">⚧ Пол:</label>
         <select id="gender" required>
           <option value="">Выберите пол...</option>
           <option value="Мужской">Мужской</option>
@@ -296,7 +296,7 @@
 
       <div class="form-group">
         <div class="range-header">
-          <label for="age">🎂 Возраст</label>
+          <label for="age">🎂 Возраст:</label>
           <span class="range-value"><span id="age_value">25</span> лет</span>
         </div>
         <input type="range" id="age" min="1" max="100" step="1" value="25" required />
@@ -304,7 +304,7 @@
 
       <div class="form-group">
         <div class="range-header">
-          <label for="height_cm">📏 Рост</label>
+          <label for="height_cm">📏 Рост:</label>
           <span class="range-value"><span id="height_cm_value">170</span> см</span>
         </div>
         <input type="range" id="height_cm" min="30" max="210" step="1" value="170" required />
@@ -312,19 +312,19 @@
 
       <div class="form-group">
         <div class="range-header">
-          <label for="weight_kg">⚖️ Вес</label>
+          <label for="weight_kg">⚖️ Вес:</label>
           <span class="range-value"><span id="weight_kg_value">70</span> кг</span>
         </div>
         <input type="range" id="weight_kg" min="3" max="200" step="0.1" value="70" required />
       </div>
 
       <div class="form-group">
-        <label for="chronic_diseases">🩺 Хронические заболевания</label>
+        <label for="chronic_diseases">🩺 Хронические заболевания:</label>
         <textarea id="chronic_diseases" placeholder="Если нет, напишите: Нет" required></textarea>
       </div>
 
       <div class="form-group">
-        <label for="allergies">🚨 Аллергические реакции</label>
+        <label for="allergies">🚨 Аллергические реакции:</label>
         <textarea id="allergies" placeholder="Если нет, напишите: Нет" required></textarea>
       </div>
 
