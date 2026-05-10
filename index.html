@@ -682,6 +682,10 @@
         }
 
         setStatus('Анкета успешно сохранена!');
+
+        if (tg && typeof tg.close === 'function') {
+          setTimeout(() => tg.close(), 300);
+        }
       } catch (error) {
         console.error('SAVE ERROR:', error);
         setStatus(`Ошибка сохранения: ${error.message}`, true);
