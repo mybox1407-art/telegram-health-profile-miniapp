@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Профиль пользователя</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: var(--tg-theme-bg-color, #ffffff);
+      --text: var(--tg-theme-text-color, #111827);
+      --hint: var(--tg-theme-hint-color, #6b7280);
+      --secondary-bg: var(--tg-theme-secondary-bg-color, #f3f4f6);
+      --button: var(--tg-theme-button-color, #3390ec);
+      --button-text: var(--tg-theme-button-text-color, #ffffff);
+      --border: rgba(0, 0, 0, 0.12);
+      --danger: #dc2626;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      color: var(--hint);
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--secondary-bg);
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    .readonly-field {
+      opacity: 0.75;
+    }
+
+    .range-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .range-value {
+      color: var(--hint);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .actions {
+      margin-top: 24px;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--button);
+      color: var(--button-text);
+      padding: 14px 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 14px;
+      color: var(--hint);
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .notice {
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      background: rgba(255, 193, 7, 0.12);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Профиль пользователя</h1>
+    <p class="subtitle">Заполните данные профиля и сохраните их в базе.</p>
+
+    <div id="browserNotice" class="notice hidden">
+      Приложение открыто вне Telegram. Автозаполнение user_id и username может не работать.
+    </div>
+
+    <form id="profileForm">
+      <div class="form-group">
+        <label for="user_id">Telegram ID</label>
+        <input type="text" id="user_id" class="readonly-field" readonly />
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username Telegram</label>
+        <input type="text" id="username" class="readonly-field" readonly />
+      </div>
+
+      <div class="form-group">
+        <label for="fullname">ФИО</label>
+        <input type="text" id="fullname" placeholder="Иванов Иван Иванович" required />
+      </div>
+
+      <div class="form-group">
+        <label for="gender">Пол</label>
+        <select id="gender" required>
+          <option value="">Выберите пол...</option>
+          <option value="Мужской">Мужской</option>
+          <option value="Женский">Женский</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="age">Возраст</label>
+        <select id="age" required>
+          <option value="">Выберите возраст...</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <div class="range-header">
+          <label for="height_cm">Рост</label>
+          <span class="range-value"><span id="height_cm_value">170</span> см</span>
+        </div>
+        <input
+          type="range"
+          id="height_cm"
+          min="30"
+          max="210"
+          step="1"
+          value="170"
+        />
+      </div>
+
+      <div class="form-group">
+        <div class="range-header">
+          <label for="weight_kg">Вес</label>
+          <span class="range-value"><span id="weight_kg_value">70</span> кг</span>
+        </div>
+        <input
+          type="range"
+          id="weight_kg"
+          min="3"
+          max="200"
+          step="0.1"
+          value="70"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="chronic_diseases">Хронические заболевания</label>
+        <textarea id="chronic_diseases" placeholder="Если нет, напишите: Нет"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="allergies">Аллергические реакции</label>
+        <textarea id="allergies" placeholder="Если нет, напишите: Нет"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="city">Город</label>
+        <select id="city" required>
+          <option value="">Загрузка городов...</option>
+        </select>
+      </div>
+
+      <div class="actions">
+        <button type="submit" id="submitBtn">Сохранить профиль</button>
+        <div id="status" class="status"></div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    const GET_CITIES_URL = 'https://n8n.kino-test.ru/webhook/get_cities';
+    const SAVE_PROFILE_URL = 'https://n8n.kino-test.ru/webhook/save-profile';
+
+    const els = {
+      browserNotice: document.getElementById('browserNotice'),
+      profileForm: document.getElementById('profileForm'),
+      submitBtn: document.getElementById('submitBtn'),
+      status: document.getElementById('status'),
+
+      user_id: document.getElementById('user_id'),
+      username: document.getElementById('username'),
+      fullname: document.getElementById('fullname'),
+      gender: document.getElementById('gender'),
+      age: document.getElementById('age'),
+      height_cm: document.getElementById('height_cm'),
+      height_cm_value: document.getElementById('height_cm_value'),
+      weight_kg: document.getElementById('weight_kg'),
+      weight_kg_value: document.getElementById('weight_kg_value'),
+      chronic_diseases: document.getElementById('chronic_diseases'),
+      allergies: document.getElementById('allergies'),
+      city: document.getElementById('city')
+    };
+
+    function setStatus(message, isError = false) {
+      els.status.textContent = message;
+      els.status.className = isError ? 'status error' : 'status';
+    }
+
+    function fillAgeOptions() {
+      for (let i = 1; i <= 100; i++) {
+        const option = document.createElement('option');
+        option.value = String(i);
+        option.textContent = String(i);
+        els.age.appendChild(option);
+      }
+    }
+
+    function bindRangeValues() {
+      els.height_cm.addEventListener('input', () => {
+        els.height_cm_value.textContent = els.height_cm.value;
+      });
+
+      els.weight_kg.addEventListener('input', () => {
+        els.weight_kg_value.textContent = Number(els.weight_kg.value).toFixed(1).replace(/\.0$/, '');
+      });
+
+      els.height_cm_value.textContent = els.height_cm.value;
+      els.weight_kg_value.textContent = Number(els.weight_kg.value).toFixed(1).replace(/\.0$/, '');
+    }
+
+    function initTelegramUser() {
+      if (!tg) {
+        els.browserNotice.classList.remove('hidden');
+        els.username.value = '';
+        els.user_id.value = '';
+        return;
+      }
+
+      tg.ready();
+      tg.expand();
+
+      const user = tg.initDataUnsafe?.user;
+
+      if (!user) {
+        els.browserNotice.classList.remove('hidden');
+        return;
+      }
+
+      els.user_id.value = user.id ? String(user.id) : '';
+      els.username.value = user.username || '';
+    }
+
+    async function loadCities() {
+      try {
+        setStatus('Загружаем города...');
+        const response = await fetch(GET_CITIES_URL, {
+          method: 'GET'
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка загрузки городов');
+        }
+
+        const cities = await response.json();
+
+        els.city.innerHTML = '<option value="">Выберите город...</option>';
+
+        cities.forEach((item) => {
+          const cityName = item.city_name || item.name || item.city || '';
+          if (!cityName) return;
+
+          const option = document.createElement('option');
+          option.value = cityName;
+          option.textContent = cityName;
+          els.city.appendChild(option);
+        });
+
+        setStatus('');
+      } catch (error) {
+        console.error(error);
+        els.city.innerHTML = '<option value="">Не удалось загрузить города</option>';
+        setStatus('Не удалось загрузить список городов.', true);
+      }
+    }
+
+    function buildPayload() {
+      return {
+        user_id: els.user_id.value ? Number(els.user_id.value) : null,
+        username: els.username.value.trim(),
+        fullname: els.fullname.value.trim(),
+        gender: els.gender.value,
+        age: Number(els.age.value),
+        height_cm: Number(els.height_cm.value),
+        weight_kg: Number(els.weight_kg.value),
+        chronic_diseases: els.chronic_diseases.value.trim(),
+        allergies: els.allergies.value.trim(),
+        city: els.city.value
+      };
+    }
+
+    function validatePayload(payload) {
+      if (!payload.user_id) {
+        return 'Не удалось определить Telegram user_id. Откройте форму внутри Telegram.';
+      }
+
+      if (!payload.fullname) {
+        return 'Заполните поле ФИО.';
+      }
+
+      if (!payload.gender) {
+        return 'Выберите пол.';
+      }
+
+      if (!payload.age || payload.age < 1 || payload.age > 100) {
+        return 'Выберите корректный возраст.';
+      }
+
+      if (!payload.city) {
+        return 'Выберите город.';
+      }
+
+      return '';
+    }
+
+    els.profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const payload = buildPayload();
+      const validationError = validatePayload(payload);
+
+      if (validationError) {
+        setStatus(validationError, true);
+        return;
+      }
+
+      try {
+        els.submitBtn.disabled = true;
+        setStatus('Сохраняем профиль...');
+
+        const response = await fetch(SAVE_PROFILE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка при сохранении профиля');
+        }
+
+        setStatus('Профиль успешно сохранен.');
+
+        setTimeout(() => {
+          if (tg) {
+            tg.close();
+          }
+        }, 700);
+      } catch (error) {
+        console.error(error);
+        setStatus('Не удалось сохранить профиль.', true);
+      } finally {
+        els.submitBtn.disabled = false;
+      }
+    });
+
+    fillAgeOptions();
+    bindRangeValues();
+    initTelegramUser();
+    loadCities();
+  </script>
+</body>
+</html>
