@@ -7,15 +7,18 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: var(--tg-theme-bg-color, #17212b);
-      --text: var(--tg-theme-text-color, #ffffff);
-      --hint: var(--tg-theme-hint-color, #9ca3af);
-      --secondary-bg: var(--tg-theme-secondary-bg-color, #232e3c);
-      --button: var(--tg-theme-button-color, #8b5cf6);
-      --button-text: var(--tg-theme-button-text-color, #ffffff);
-      --border: rgba(255, 255, 255, 0.12);
+      --bg: #f4f4f5;
+      --text: #111111;
+      --hint: #7a7a7a;
+      --field-bg: #ffffff;
+      --field-text: #111111;
+      --field-placeholder: #8b8b8b;
+      --button: #8b5cf6;
+      --button-text: #ffffff;
+      --border: rgba(0, 0, 0, 0.12);
       --danger: #ef4444;
       --radius: 14px;
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
     }
 
     * {
@@ -39,6 +42,7 @@
       margin: 0 0 10px;
       font-size: 28px;
       font-weight: 700;
+      color: #111111;
     }
 
     .subtitle {
@@ -56,20 +60,28 @@
       margin-bottom: 8px;
       font-size: 15px;
       font-weight: 600;
+      color: #222222;
     }
 
     input[type="text"],
     textarea,
+    select,
     .custom-select-trigger,
     .custom-select-search {
       width: 100%;
       padding: 14px 16px;
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      background: #0b0f14;
-      color: var(--text);
+      background: var(--field-bg);
+      color: var(--field-text);
       font-size: 16px;
       outline: none;
+    }
+
+    input[type="text"]::placeholder,
+    textarea::placeholder,
+    .custom-select-search::placeholder {
+      color: var(--field-placeholder);
     }
 
     textarea {
@@ -78,7 +90,9 @@
     }
 
     input[readonly] {
-      opacity: 0.95;
+      opacity: 1;
+      background: #f8f8f8;
+      color: #222222;
     }
 
     input[type="range"] {
@@ -95,7 +109,7 @@
     }
 
     .range-value {
-      color: var(--hint);
+      color: #6b7280;
       font-size: 14px;
       min-width: 70px;
       text-align: right;
@@ -111,6 +125,7 @@
       font-size: 18px;
       font-weight: 700;
       cursor: pointer;
+      box-shadow: var(--shadow);
     }
 
     button:disabled {
@@ -121,7 +136,7 @@
     .status {
       margin-top: 14px;
       font-size: 15px;
-      color: var(--hint);
+      color: #6b7280;
     }
 
     .status.error {
@@ -133,7 +148,7 @@
       padding: 12px 14px;
       border-radius: var(--radius);
       background: rgba(255, 196, 0, 0.12);
-      color: #facc15;
+      color: #9a6700;
       font-size: 14px;
       display: none;
     }
@@ -148,6 +163,8 @@
       justify-content: space-between;
       cursor: pointer;
       text-align: left;
+      background: var(--field-bg);
+      color: var(--field-text);
     }
 
     .custom-select-trigger span {
@@ -155,7 +172,7 @@
     }
 
     .custom-select-arrow {
-      color: var(--hint);
+      color: #6b7280;
       font-size: 18px;
       margin-left: 10px;
     }
@@ -166,11 +183,11 @@
       left: 0;
       right: 0;
       z-index: 1000;
-      background: #0b0f14;
+      background: #ffffff;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
     }
 
     .hidden {
@@ -181,19 +198,23 @@
       border: none;
       border-bottom: 1px solid var(--border);
       border-radius: 0;
-      background: #111827;
+      background: #ffffff;
+      color: #111111;
     }
 
     .custom-select-options {
       max-height: 240px;
       overflow-y: auto;
+      background: #ffffff;
     }
 
     .custom-select-option {
       padding: 13px 16px;
       font-size: 15px;
       cursor: pointer;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: #111111;
+      background: #ffffff;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
 
     .custom-select-option:last-child {
@@ -202,13 +223,14 @@
 
     .custom-select-option:hover,
     .custom-select-option.active {
-      background: rgba(139, 92, 246, 0.18);
+      background: rgba(139, 92, 246, 0.12);
     }
 
     .custom-select-empty {
       padding: 14px 16px;
-      color: var(--hint);
+      color: #6b7280;
       font-size: 14px;
+      background: #ffffff;
     }
   </style>
 </head>
@@ -263,13 +285,11 @@
 
       <div class="form-group">
         <label for="gender">⚧ Пол</label>
-        <div class="custom-select">
-          <select id="gender" required style="width:100%;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius);background:#0b0f14;color:var(--text);font-size:16px;outline:none;">
-            <option value="">Выберите пол...</option>
-            <option value="Мужской">Мужской</option>
-            <option value="Женский">Женский</option>
-          </select>
-        </div>
+        <select id="gender" required>
+          <option value="">Выберите пол...</option>
+          <option value="Мужской">Мужской</option>
+          <option value="Женский">Женский</option>
+        </select>
       </div>
 
       <div class="form-group">
