@@ -236,7 +236,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Анкета пользователя</h1>
+    <h1>Анкета</h1>
     <p class="subtitle">Заполните базовую информацию о себе</p>
 
     <div id="browserNotice" class="notice">
@@ -245,17 +245,17 @@
 
     <form id="profileForm">
       <div class="form-group">
-        <label for="user_id">🆔 Telegram ID (заполняется автоматически):</label>
+        <label for="user_id">🆔 Telegram ID</label>
         <input type="text" id="user_id" readonly />
       </div>
 
       <div class="form-group">
-        <label for="username">@ Username Telegram (заполняется автоматически):</label>
+        <label for="username">@ Username Telegram</label>
         <input type="text" id="username" readonly />
       </div>
 
       <div class="form-group">
-        <label for="city_search">🌆 Город (необходимо выбрать из списка):</label>
+        <label for="city_search">🌆 Город</label>
 
         <div class="custom-select" id="citySelect">
           <div class="custom-select-trigger" id="cityTrigger" tabindex="0">
@@ -279,12 +279,12 @@
       </div>
 
       <div class="form-group">
-        <label for="fullname">👤 Имя:</label>
+        <label for="fullname">👤 Имя</label>
         <input type="text" id="fullname" placeholder="Введите имя" required />
       </div>
 
       <div class="form-group">
-        <label for="gender">⚧ Пол (необходимо выбрать из списка):</label>
+        <label for="gender">⚧ Пол</label>
         <select id="gender" required>
           <option value="">Выберите пол...</option>
           <option value="Мужской">Мужской</option>
@@ -294,7 +294,7 @@
 
       <div class="form-group">
         <div class="range-header">
-          <label for="age">🎂 Возраст:</label>
+          <label for="age">🎂 Возраст</label>
           <span class="range-value"><span id="age_value">25</span> лет</span>
         </div>
         <input type="range" id="age" min="1" max="100" step="1" value="25" required />
@@ -302,7 +302,7 @@
 
       <div class="form-group">
         <div class="range-header">
-          <label for="height_cm">📏 Рост:</label>
+          <label for="height_cm">📏 Рост</label>
           <span class="range-value"><span id="height_cm_value">170</span> см</span>
         </div>
         <input type="range" id="height_cm" min="30" max="210" step="1" value="170" required />
@@ -310,23 +310,23 @@
 
       <div class="form-group">
         <div class="range-header">
-          <label for="weight_kg">⚖️ Вес:</label>
+          <label for="weight_kg">⚖️ Вес</label>
           <span class="range-value"><span id="weight_kg_value">70</span> кг</span>
         </div>
         <input type="range" id="weight_kg" min="3" max="200" step="0.1" value="70" required />
       </div>
 
       <div class="form-group">
-        <label for="chronic_diseases">🩺 Хронические заболевания:</label>
+        <label for="chronic_diseases">🩺 Хронические заболевания</label>
         <textarea id="chronic_diseases" placeholder="Если нет, напишите: Нет" required></textarea>
       </div>
 
       <div class="form-group">
-        <label for="allergies">🚨 Аллергические реакции:</label>
+        <label for="allergies">🚨 Аллергические реакции</label>
         <textarea id="allergies" placeholder="Если нет, напишите: Нет" required></textarea>
       </div>
 
-      <button type="submit" id="submitBtn">Сохранить анкету:</button>
+      <button type="submit" id="submitBtn">Сохранить анкету</button>
       <div id="status" class="status"></div>
     </form>
   </div>
@@ -335,6 +335,7 @@
     const tg = window.Telegram?.WebApp;
 
     const GET_CITIES_URL = 'https://n8n.kino-test.ru/webhook/get_cities';
+    const GET_PROFILE_URL = 'https://n8n.kino-test.ru/webhook/get-profile';
     const SAVE_PROFILE_URL = 'https://n8n.kino-test.ru/webhook/save-profile';
 
     const els = {
@@ -401,20 +402,23 @@
     function initTelegram() {
       if (!tg) {
         els.browserNotice.style.display = 'block';
-        return;
+        return null;
       }
 
       tg.ready();
       tg.expand();
 
       const user = tg.initDataUnsafe?.user;
+
       if (!user) {
         els.browserNotice.style.display = 'block';
-        return;
+        return null;
       }
 
       els.user_id.value = user.id ? String(user.id) : '';
       els.username.value = user.username || '';
+
+      return user;
     }
 
     function openCityDropdown() {
@@ -425,6 +429,12 @@
 
     function closeCityDropdown() {
       cityUI.dropdown.classList.add('hidden');
+    }
+
+    function setCity(cityName) {
+      cityUI.hiddenInput.value = cityName || '';
+      cityUI.triggerText.textContent = cityName || 'Выберите город...';
+      cityUI.search.value = cityName || '';
     }
 
     function renderCityOptions(cities) {
@@ -448,9 +458,7 @@
         }
 
         option.addEventListener('click', () => {
-          cityUI.hiddenInput.value = cityName;
-          cityUI.triggerText.textContent = cityName;
-          cityUI.search.value = cityName;
+          setCity(cityName);
           closeCityDropdown();
         });
 
@@ -474,8 +482,8 @@
       cityUI.trigger.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          const isHidden = cityUI.dropdown.classList.contains('hidden');
 
+          const isHidden = cityUI.dropdown.classList.contains('hidden');
           if (isHidden) {
             filteredCities = allCities;
             renderCityOptions(filteredCities);
@@ -505,34 +513,87 @@
     }
 
     async function loadCities() {
-      try {
-        setStatus('Загружаем города...');
+      const response = await fetch(GET_CITIES_URL, {
+        method: 'GET'
+      });
 
-        const response = await fetch(GET_CITIES_URL, {
-          method: 'GET'
+      if (!response.ok) {
+        throw new Error('Ошибка загрузки городов!');
+      }
+
+      const result = await response.json();
+      const cities = Array.isArray(result)
+        ? result
+        : (Array.isArray(result.cities) ? result.cities : []);
+
+      if (!cities.length) {
+        throw new Error('Список городов пуст!');
+      }
+
+      allCities = cities;
+      filteredCities = cities;
+      renderCityOptions(allCities);
+    }
+
+    function applyProfile(profile) {
+      if (!profile || typeof profile !== 'object') {
+        return;
+      }
+
+      if (profile.city) setCity(profile.city);
+      if (profile.fullname) els.fullname.value = profile.fullname;
+      if (profile.gender) els.gender.value = profile.gender;
+
+      if (profile.age !== null && profile.age !== undefined && profile.age !== '') {
+        els.age.value = Number(profile.age);
+      }
+
+      if (profile.height_cm !== null && profile.height_cm !== undefined && profile.height_cm !== '') {
+        els.height_cm.value = Number(profile.height_cm);
+      }
+
+      if (profile.weight_kg !== null && profile.weight_kg !== undefined && profile.weight_kg !== '') {
+        els.weight_kg.value = Number(profile.weight_kg);
+      }
+
+      if (profile.chronic_diseases) els.chronic_diseases.value = profile.chronic_diseases;
+      if (profile.allergies) els.allergies.value = profile.allergies;
+
+      els.age.dispatchEvent(new Event('input'));
+      els.height_cm.dispatchEvent(new Event('input'));
+      els.weight_kg.dispatchEvent(new Event('input'));
+    }
+
+    async function loadProfile(userId) {
+      try {
+        setStatus('Загружаем данные анкеты...');
+
+        const response = await fetch(GET_PROFILE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            telegram_id: userId
+          })
         });
 
         if (!response.ok) {
-          throw new Error('Ошибка загрузки городов!');
+          throw new Error('Ошибка загрузки анкеты');
         }
 
         const result = await response.json();
-        const cities = Array.isArray(result)
-          ? result
-          : (Array.isArray(result.cities) ? result.cities : []);
 
-        if (!cities.length) {
-          throw new Error('Список городов пуст!');
+        if (!result || result.found !== true || !result.profile) {
+          setStatus('');
+          return;
         }
 
-        allCities = cities;
-        filteredCities = cities;
-        renderCityOptions(allCities);
+        applyProfile(result.profile);
         setStatus('');
       } catch (error) {
         console.error(error);
-        cityUI.triggerText.textContent = 'Не удалось загрузить города!';
-        setStatus('Не удалось загрузить список городов!', true);
+        setStatus('Не удалось загрузить анкету из базы!', true);
       }
     }
 
@@ -591,10 +652,6 @@
         }
 
         setStatus('Анкета успешно сохранена!');
-
-        setTimeout(() => {
-          if (tg) tg.close();
-        }, 700);
       } catch (error) {
         console.error(error);
         setStatus('Не удалось сохранить анкету!', true);
@@ -603,10 +660,30 @@
       }
     });
 
-    bindRangeValues();
-    initTelegram();
-    setupCitySearch();
-    loadCities();
+    async function initApp() {
+      bindRangeValues();
+      setupCitySearch();
+
+      const user = initTelegram();
+
+      try {
+        setStatus('Загружаем города...');
+        await loadCities();
+      } catch (error) {
+        console.error(error);
+        cityUI.triggerText.textContent = 'Не удалось загрузить города!';
+        setStatus('Не удалось загрузить список городов!', true);
+        return;
+      }
+
+      if (user?.id) {
+        await loadProfile(user.id);
+      } else {
+        setStatus('');
+      }
+    }
+
+    initApp();
   </script>
 </body>
 </html>
