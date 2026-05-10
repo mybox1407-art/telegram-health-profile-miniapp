@@ -59,8 +59,9 @@
     }
 
     input[type="text"],
-    select,
-    textarea {
+    textarea,
+    .custom-select-trigger,
+    .custom-select-search {
       width: 100%;
       padding: 14px 16px;
       border: 1px solid var(--border);
@@ -100,21 +101,6 @@
       text-align: right;
     }
 
-    .city-search {
-      margin-bottom: 10px;
-    }
-
-    .city-search input {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: #0b0f14;
-      color: var(--text);
-      font-size: 15px;
-      outline: none;
-    }
-
     button {
       width: 100%;
       border: none;
@@ -151,6 +137,79 @@
       font-size: 14px;
       display: none;
     }
+
+    .custom-select {
+      position: relative;
+    }
+
+    .custom-select-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .custom-select-trigger span {
+      pointer-events: none;
+    }
+
+    .custom-select-arrow {
+      color: var(--hint);
+      font-size: 18px;
+      margin-left: 10px;
+    }
+
+    .custom-select-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: #0b0f14;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .custom-select-search {
+      border: none;
+      border-bottom: 1px solid var(--border);
+      border-radius: 0;
+      background: #111827;
+    }
+
+    .custom-select-options {
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .custom-select-option {
+      padding: 13px 16px;
+      font-size: 15px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .custom-select-option:last-child {
+      border-bottom: none;
+    }
+
+    .custom-select-option:hover,
+    .custom-select-option.active {
+      background: rgba(139, 92, 246, 0.18);
+    }
+
+    .custom-select-empty {
+      padding: 14px 16px;
+      color: var(--hint);
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -175,12 +234,26 @@
 
       <div class="form-group">
         <label for="city_search">🌆 Город</label>
-        <div class="city-search">
-          <input type="text" id="city_search" placeholder="Начните вводить город..." />
+
+        <div class="custom-select" id="citySelect">
+          <div class="custom-select-trigger" id="cityTrigger" tabindex="0">
+            <span id="cityTriggerText">Выберите город...</span>
+            <span class="custom-select-arrow">⌄</span>
+          </div>
+
+          <div class="custom-select-dropdown hidden" id="cityDropdown">
+            <input
+              type="text"
+              id="city_search"
+              class="custom-select-search"
+              placeholder="Начните вводить город..."
+              autocomplete="off"
+            />
+            <div class="custom-select-options" id="cityOptions"></div>
+          </div>
         </div>
-        <select id="city" required>
-          <option value="">Загрузка городов...</option>
-        </select>
+
+        <input type="hidden" id="city" required />
       </div>
 
       <div class="form-group">
@@ -190,11 +263,13 @@
 
       <div class="form-group">
         <label for="gender">⚧ Пол</label>
-        <select id="gender" required>
-          <option value="">Выберите пол...</option>
-          <option value="Мужской">Мужской</option>
-          <option value="Женский">Женский</option>
-        </select>
+        <div class="custom-select">
+          <select id="gender" required style="width:100%;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius);background:#0b0f14;color:var(--text);font-size:16px;outline:none;">
+            <option value="">Выберите пол...</option>
+            <option value="Мужской">Мужской</option>
+            <option value="Женский">Женский</option>
+          </select>
+        </div>
       </div>
 
       <div class="form-group">
@@ -251,7 +326,6 @@
       user_id: document.getElementById('user_id'),
       username: document.getElementById('username'),
       city: document.getElementById('city'),
-      city_search: document.getElementById('city_search'),
       fullname: document.getElementById('fullname'),
       gender: document.getElementById('gender'),
       age: document.getElementById('age'),
@@ -264,7 +338,18 @@
       allergies: document.getElementById('allergies')
     };
 
+    const cityUI = {
+      select: document.getElementById('citySelect'),
+      trigger: document.getElementById('cityTrigger'),
+      triggerText: document.getElementById('cityTriggerText'),
+      dropdown: document.getElementById('cityDropdown'),
+      search: document.getElementById('city_search'),
+      options: document.getElementById('cityOptions'),
+      hiddenInput: document.getElementById('city')
+    };
+
     let allCities = [];
+    let filteredCities = [];
 
     function setStatus(message, isError = false) {
       els.status.textContent = message;
@@ -303,7 +388,6 @@
       tg.expand();
 
       const user = tg.initDataUnsafe?.user;
-
       if (!user) {
         els.browserNotice.style.display = 'block';
         return;
@@ -313,41 +397,90 @@
       els.username.value = user.username || '';
     }
 
-    function renderCities(cities) {
-      const currentValue = els.city.value;
-      els.city.innerHTML = '<option value="">Выберите город...</option>';
+    function openCityDropdown() {
+      cityUI.dropdown.classList.remove('hidden');
+      cityUI.search.focus();
+      cityUI.search.select();
+    }
+
+    function closeCityDropdown() {
+      cityUI.dropdown.classList.add('hidden');
+    }
+
+    function renderCityOptions(cities) {
+      cityUI.options.innerHTML = '';
+
+      if (!cities.length) {
+        cityUI.options.innerHTML = '<div class="custom-select-empty">Ничего не найдено</div>';
+        return;
+      }
 
       for (const item of cities) {
         const cityName = item.city_name || item.name || item.city || '';
         if (!cityName) continue;
 
-        const option = document.createElement('option');
-        option.value = cityName;
+        const option = document.createElement('div');
+        option.className = 'custom-select-option';
         option.textContent = cityName;
 
-        if (cityName === currentValue) {
-          option.selected = true;
+        if (cityUI.hiddenInput.value === cityName) {
+          option.classList.add('active');
         }
 
-        els.city.appendChild(option);
+        option.addEventListener('click', () => {
+          cityUI.hiddenInput.value = cityName;
+          cityUI.triggerText.textContent = cityName;
+          cityUI.search.value = cityName;
+          closeCityDropdown();
+        });
+
+        cityUI.options.appendChild(option);
       }
     }
 
     function setupCitySearch() {
-      els.city_search.addEventListener('input', () => {
-        const query = els.city_search.value.trim().toLowerCase();
+      cityUI.trigger.addEventListener('click', () => {
+        const isHidden = cityUI.dropdown.classList.contains('hidden');
 
-        if (!query) {
-          renderCities(allCities);
-          return;
+        if (isHidden) {
+          filteredCities = allCities;
+          renderCityOptions(filteredCities);
+          openCityDropdown();
+        } else {
+          closeCityDropdown();
         }
+      });
 
-        const filtered = allCities.filter(item => {
+      cityUI.trigger.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const isHidden = cityUI.dropdown.classList.contains('hidden');
+
+          if (isHidden) {
+            filteredCities = allCities;
+            renderCityOptions(filteredCities);
+            openCityDropdown();
+          } else {
+            closeCityDropdown();
+          }
+        }
+      });
+
+      cityUI.search.addEventListener('input', () => {
+        const query = cityUI.search.value.trim().toLowerCase();
+
+        filteredCities = allCities.filter(item => {
           const cityName = (item.city_name || item.name || item.city || '').toLowerCase();
           return cityName.includes(query);
         });
 
-        renderCities(filtered);
+        renderCityOptions(filteredCities);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!cityUI.select.contains(e.target)) {
+          closeCityDropdown();
+        }
       });
     }
 
@@ -364,18 +497,21 @@
         }
 
         const result = await response.json();
-        const cities = Array.isArray(result) ? result : (Array.isArray(result.cities) ? result.cities : []);
+        const cities = Array.isArray(result)
+          ? result
+          : (Array.isArray(result.cities) ? result.cities : []);
 
         if (!cities.length) {
           throw new Error('Список городов пуст!');
         }
 
         allCities = cities;
-        renderCities(allCities);
+        filteredCities = cities;
+        renderCityOptions(allCities);
         setStatus('');
       } catch (error) {
         console.error(error);
-        els.city.innerHTML = '<option value="">Не удалось загрузить города из базы данных!</option>';
+        cityUI.triggerText.textContent = 'Не удалось загрузить города!';
         setStatus('Не удалось загрузить список городов!', true);
       }
     }
@@ -384,7 +520,7 @@
       return {
         user_id: els.user_id.value ? Number(els.user_id.value) : null,
         username: els.username.value.trim(),
-        city: els.city.value,
+        city: cityUI.hiddenInput.value,
         fullname: els.fullname.value.trim(),
         gender: els.gender.value,
         age: Number(els.age.value),
