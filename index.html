@@ -7,15 +7,15 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: var(--tg-theme-bg-color, #ffffff);
-      --text: var(--tg-theme-text-color, #111827);
-      --hint: var(--tg-theme-hint-color, #6b7280);
-      --secondary-bg: var(--tg-theme-secondary-bg-color, #f3f4f6);
-      --button: var(--tg-theme-button-color, #3390ec);
+      --bg: var(--tg-theme-bg-color, #17212b);
+      --text: var(--tg-theme-text-color, #ffffff);
+      --hint: var(--tg-theme-hint-color, #9ca3af);
+      --secondary-bg: var(--tg-theme-secondary-bg-color, #232e3c);
+      --button: var(--tg-theme-button-color, #8b5cf6);
       --button-text: var(--tg-theme-button-text-color, #ffffff);
-      --border: rgba(0, 0, 0, 0.12);
-      --danger: #dc2626;
-      --radius: 12px;
+      --border: rgba(255, 255, 255, 0.12);
+      --danger: #ef4444;
+      --radius: 14px;
     }
 
     * {
@@ -24,37 +24,37 @@
 
     body {
       margin: 0;
-      padding: 16px;
+      padding: 20px;
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     }
 
     .container {
-      max-width: 680px;
+      max-width: 760px;
       margin: 0 auto;
     }
 
     h1 {
-      margin: 0 0 8px;
-      font-size: 24px;
-      line-height: 1.2;
+      margin: 0 0 10px;
+      font-size: 28px;
+      font-weight: 700;
     }
 
     .subtitle {
-      margin: 0 0 20px;
+      margin: 0 0 24px;
       color: var(--hint);
-      font-size: 14px;
+      font-size: 16px;
     }
 
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 22px;
     }
 
     label {
       display: block;
       margin-bottom: 8px;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 600;
     }
 
@@ -62,26 +62,27 @@
     select,
     textarea {
       width: 100%;
-      padding: 12px 14px;
+      padding: 14px 16px;
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      background: var(--secondary-bg);
+      background: #0b0f14;
       color: var(--text);
       font-size: 16px;
       outline: none;
     }
 
     textarea {
-      min-height: 92px;
+      min-height: 110px;
       resize: vertical;
+    }
+
+    input[readonly] {
+      opacity: 0.95;
     }
 
     input[type="range"] {
       width: 100%;
-    }
-
-    .readonly-field {
-      opacity: 0.75;
+      accent-color: #c061ff;
     }
 
     .range-header {
@@ -89,17 +90,14 @@
       justify-content: space-between;
       align-items: center;
       gap: 12px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .range-value {
       color: var(--hint);
       font-size: 14px;
-      white-space: nowrap;
-    }
-
-    .actions {
-      margin-top: 24px;
+      min-width: 70px;
+      text-align: right;
     }
 
     button {
@@ -108,20 +106,20 @@
       border-radius: var(--radius);
       background: var(--button);
       color: var(--button-text);
-      padding: 14px 16px;
-      font-size: 16px;
+      padding: 16px;
+      font-size: 18px;
       font-weight: 700;
       cursor: pointer;
     }
 
     button:disabled {
-      opacity: 0.6;
+      opacity: 0.65;
       cursor: not-allowed;
     }
 
     .status {
-      margin-top: 12px;
-      font-size: 14px;
+      margin-top: 14px;
+      font-size: 15px;
       color: var(--hint);
     }
 
@@ -129,38 +127,39 @@
       color: var(--danger);
     }
 
-    .hidden {
-      display: none;
-    }
-
     .notice {
       margin-bottom: 16px;
       padding: 12px 14px;
       border-radius: var(--radius);
-      background: rgba(255, 193, 7, 0.12);
+      background: rgba(255, 196, 0, 0.12);
+      color: #facc15;
       font-size: 14px;
-      line-height: 1.4;
+      display: none;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Анкета</h1>
-    <p class="subtitle">Заполните анкету с базовой информацией</p>
+    <p class="subtitle">Заполните базовую информацию о себе</p>
 
-    <div id="browserNotice" class="notice hidden">
-      Приложение открыто вне Telegram. Автозаполнение Telegram ID и Username Telegram может не работать!
+    <div id="browserNotice" class="notice">
+      Приложение открыто вне Telegram. Telegram ID и username могут не определиться.
     </div>
 
     <form id="profileForm">
       <div class="form-group">
         <label for="user_id">Telegram ID</label>
-        <input type="text" id="user_id" class="readonly-field" readonly />
+        <input type="text" id="user_id" readonly />
       </div>
 
       <div class="form-group">
         <label for="username">Username Telegram</label>
-        <input type="text" id="username" class="readonly-field" readonly />
+        <input type="text" id="username" readonly />
       </div>
 
       <div class="form-group">
@@ -196,15 +195,7 @@
           <label for="height_cm">Рост</label>
           <span class="range-value"><span id="height_cm_value">170</span> см</span>
         </div>
-        <input
-          type="range"
-          id="height_cm"
-          min="30"
-          max="210"
-          step="1"
-          value="170"
-          required
-        />
+        <input type="range" id="height_cm" min="30" max="210" step="1" value="170" required />
       </div>
 
       <div class="form-group">
@@ -212,15 +203,7 @@
           <label for="weight_kg">Вес</label>
           <span class="range-value"><span id="weight_kg_value">70</span> кг</span>
         </div>
-        <input
-          type="range"
-          id="weight_kg"
-          min="3"
-          max="200"
-          step="0.1"
-          value="70"
-          required
-        />
+        <input type="range" id="weight_kg" min="3" max="200" step="0.1" value="70" required />
       </div>
 
       <div class="form-group">
@@ -233,15 +216,14 @@
         <textarea id="allergies" placeholder="Если нет, напишите: Нет" required></textarea>
       </div>
 
-      <div class="actions">
-        <button type="submit" id="submitBtn">Сохранить анкету</button>
-        <div id="status" class="status"></div>
-      </div>
+      <button type="submit" id="submitBtn">Сохранить анкету</button>
+      <div id="status" class="status"></div>
     </form>
   </div>
 
   <script>
     const tg = window.Telegram?.WebApp;
+
     const GET_CITIES_URL = 'https://n8n.kino-test.ru/webhook/get_cities';
     const SAVE_PROFILE_URL = 'https://n8n.kino-test.ru/webhook/save-profile';
 
@@ -253,6 +235,7 @@
 
       user_id: document.getElementById('user_id'),
       username: document.getElementById('username'),
+      city: document.getElementById('city'),
       fullname: document.getElementById('fullname'),
       gender: document.getElementById('gender'),
       age: document.getElementById('age'),
@@ -261,8 +244,7 @@
       weight_kg: document.getElementById('weight_kg'),
       weight_kg_value: document.getElementById('weight_kg_value'),
       chronic_diseases: document.getElementById('chronic_diseases'),
-      allergies: document.getElementById('allergies'),
-      city: document.getElementById('city')
+      allergies: document.getElementById('allergies')
     };
 
     function setStatus(message, isError = false) {
@@ -280,23 +262,24 @@
     }
 
     function bindRangeValues() {
-      els.height_cm.addEventListener('input', () => {
+      const updateHeight = () => {
         els.height_cm_value.textContent = els.height_cm.value;
-      });
+      };
 
-      els.weight_kg.addEventListener('input', () => {
-        els.weight_kg_value.textContent = Number(els.weight_kg.value).toFixed(1).replace(/\\.0$/, '');
-      });
+      const updateWeight = () => {
+        els.weight_kg_value.textContent = Number(els.weight_kg.value).toFixed(1).replace(/\.0$/, '');
+      };
 
-      els.height_cm_value.textContent = els.height_cm.value;
-      els.weight_kg_value.textContent = Number(els.weight_kg.value).toFixed(1).replace(/\\.0$/, '');
+      els.height_cm.addEventListener('input', updateHeight);
+      els.weight_kg.addEventListener('input', updateWeight);
+
+      updateHeight();
+      updateWeight();
     }
 
-    function initTelegramUser() {
+    function initTelegram() {
       if (!tg) {
-        els.browserNotice.classList.remove('hidden');
-        els.username.value = '';
-        els.user_id.value = '';
+        els.browserNotice.style.display = 'block';
         return;
       }
 
@@ -306,7 +289,7 @@
       const user = tg.initDataUnsafe?.user;
 
       if (!user) {
-        els.browserNotice.classList.remove('hidden');
+        els.browserNotice.style.display = 'block';
         return;
       }
 
@@ -317,6 +300,7 @@
     async function loadCities() {
       try {
         setStatus('Загружаем города...');
+
         const response = await fetch(GET_CITIES_URL, {
           method: 'GET'
         });
@@ -325,19 +309,24 @@
           throw new Error('Ошибка загрузки городов!');
         }
 
-        const cities = await response.json();
+        const result = await response.json();
+        const cities = Array.isArray(result) ? result : (Array.isArray(result.cities) ? result.cities : []);
 
         els.city.innerHTML = '<option value="">Выберите город...</option>';
 
-        cities.forEach((item) => {
+        for (const item of cities) {
           const cityName = item.city_name || item.name || item.city || '';
-          if (!cityName) return;
+          if (!cityName) continue;
 
           const option = document.createElement('option');
           option.value = cityName;
           option.textContent = cityName;
           els.city.appendChild(option);
-        });
+        }
+
+        if (!cities.length) {
+          throw new Error('Список городов пуст!');
+        }
 
         setStatus('');
       } catch (error) {
@@ -351,74 +340,37 @@
       return {
         user_id: els.user_id.value ? Number(els.user_id.value) : null,
         username: els.username.value.trim(),
+        city: els.city.value,
         fullname: els.fullname.value.trim(),
         gender: els.gender.value,
-        age: Number(els.age.value),
+        age: els.age.value ? Number(els.age.value) : null,
         height_cm: Number(els.height_cm.value),
         weight_kg: Number(els.weight_kg.value),
         chronic_diseases: els.chronic_diseases.value.trim(),
-        allergies: els.allergies.value.trim(),
-        city: els.city.value
+        allergies: els.allergies.value.trim()
       };
     }
 
     function validatePayload(payload) {
-      if (!payload.user_id) {
-        return 'Не удалось определить Telegram user_id! Откройте форму внутри Telegram!';
-      }
-
-      if (!payload.username) {
-        return 'Не удалось определить username Telegram!';
-      }
-
-      if (!payload.fullname) {
-        return 'Заполните поле "Имя"!';
-      }
-
-      if (!payload.gender) {
-        return 'Выберите свой пол!';
-      }
-
-      if (!payload.age || payload.age < 1 || payload.age > 100) {
-        return 'Выберите свой возраст!';
-      }
-
-      if (!payload.height_cm || payload.height_cm < 30 || payload.height_cm > 210) {
-        return 'Укажите свой рост!';
-      }
-
-      if (!payload.weight_kg || payload.weight_kg < 3 || payload.weight_kg > 200) {
-        return 'Укажите свой вес!';
-      }
-
-      if (!payload.chronic_diseases) {
-        return 'Заполните поле "Хронические заболевания", если у вас нет хронических заболеваний напишите "Нет"!';
-      }
-
-      if (!payload.allergies) {
-        return 'Заполните поле "Аллергические реакции", если у вас нет аллергических реакций напишите "Нет"!';
-      }
-
-      if (!payload.city) {
-        return 'Выберите город!';
-      }
-
+      if (!payload.user_id) return 'Не удалось определить Telegram ID. Откройте форму из Telegram.';
+      if (!payload.username) return 'Не удалось определить username Telegram.';
+      if (!payload.city) return 'Выберите город.';
+      if (!payload.fullname) return 'Введите имя.';
+      if (!payload.gender) return 'Выберите пол.';
+      if (!payload.age) return 'Выберите возраст.';
+      if (!payload.chronic_diseases) return 'Заполните поле "Хронические заболевания".';
+      if (!payload.allergies) return 'Заполните поле "Аллергические реакции".';
       return '';
     }
 
     els.profileForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (!els.profileForm.checkValidity()) {
-        els.profileForm.reportValidity();
-        return;
-      }
-
       const payload = buildPayload();
-      const validationError = validatePayload(payload);
+      const errorMessage = validatePayload(payload);
 
-      if (validationError) {
-        setStatus(validationError, true);
+      if (errorMessage) {
+        setStatus(errorMessage, true);
         return;
       }
 
@@ -435,15 +387,13 @@
         });
 
         if (!response.ok) {
-          throw new Error('Ошибка при сохранении анкеты, повторите попытку позже!');
+          throw new Error('Ошибка при сохранении анкеты');
         }
 
         setStatus('Анкета успешно сохранена!');
 
         setTimeout(() => {
-          if (tg) {
-            tg.close();
-          }
+          if (tg) tg.close();
         }, 700);
       } catch (error) {
         console.error(error);
@@ -455,7 +405,7 @@
 
     fillAgeOptions();
     bindRangeValues();
-    initTelegramUser();
+    initTelegram();
     loadCities();
   </script>
 </body>
