@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Профиль пользователя</title>
+  <title>Анкета</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -145,11 +145,11 @@
 </head>
 <body>
   <div class="container">
-    <h1>Профиль пользователя</h1>
-    <p class="subtitle">Заполните данные профиля и сохраните их в базе.</p>
+    <h1>Анкета</h1>
+    <p class="subtitle">Заполните анкету с базовой информацией</p>
 
     <div id="browserNotice" class="notice hidden">
-      Приложение открыто вне Telegram. Автозаполнение user_id и username может не работать.
+      Приложение открыто вне Telegram. Автозаполнение Telegram ID и Username Telegram может не работать!
     </div>
 
     <form id="profileForm">
@@ -164,8 +164,8 @@
       </div>
 
       <div class="form-group">
-        <label for="fullname">ФИО</label>
-        <input type="text" id="fullname" placeholder="Иванов Иван Иванович" required />
+        <label for="fullname">Имя</label>
+        <input type="text" id="fullname" placeholder="Введите имя" required />
       </div>
 
       <div class="form-group">
@@ -196,6 +196,7 @@
           max="210"
           step="1"
           value="170"
+          required
         />
       </div>
 
@@ -211,17 +212,18 @@
           max="200"
           step="0.1"
           value="70"
+          required
         />
       </div>
 
       <div class="form-group">
         <label for="chronic_diseases">Хронические заболевания</label>
-        <textarea id="chronic_diseases" placeholder="Если нет, напишите: Нет"></textarea>
+        <textarea id="chronic_diseases" placeholder="Если нет, напишите: Нет" required></textarea>
       </div>
 
       <div class="form-group">
         <label for="allergies">Аллергические реакции</label>
-        <textarea id="allergies" placeholder="Если нет, напишите: Нет"></textarea>
+        <textarea id="allergies" placeholder="Если нет, напишите: Нет" required></textarea>
       </div>
 
       <div class="form-group">
@@ -232,7 +234,7 @@
       </div>
 
       <div class="actions">
-        <button type="submit" id="submitBtn">Сохранить профиль</button>
+        <button type="submit" id="submitBtn">Сохранить анкету</button>
         <div id="status" class="status"></div>
       </div>
     </form>
@@ -320,7 +322,7 @@
         });
 
         if (!response.ok) {
-          throw new Error('Ошибка загрузки городов');
+          throw new Error('Ошибка загрузки городов!');
         }
 
         const cities = await response.json();
@@ -340,8 +342,8 @@
         setStatus('');
       } catch (error) {
         console.error(error);
-        els.city.innerHTML = '<option value="">Не удалось загрузить города</option>';
-        setStatus('Не удалось загрузить список городов.', true);
+        els.city.innerHTML = '<option value="">Не удалось загрузить города из базы данных!</option>';
+        setStatus('Не удалось загрузить список городов!', true);
       }
     }
 
@@ -362,23 +364,43 @@
 
     function validatePayload(payload) {
       if (!payload.user_id) {
-        return 'Не удалось определить Telegram user_id. Откройте форму внутри Telegram.';
+        return 'Не удалось определить Telegram user_id! Откройте форму внутри Telegram!';
+      }
+
+      if (!payload.username) {
+        return 'Не удалось определить username Telegram!';
       }
 
       if (!payload.fullname) {
-        return 'Заполните поле ФИО.';
+        return 'Заполните поле "Имя"!';
       }
 
       if (!payload.gender) {
-        return 'Выберите пол.';
+        return 'Выберите свой пол!';
       }
 
       if (!payload.age || payload.age < 1 || payload.age > 100) {
-        return 'Выберите корректный возраст.';
+        return 'Выберите свой возраст!';
+      }
+
+      if (!payload.height_cm || payload.height_cm < 30 || payload.height_cm > 210) {
+        return 'Укажите свой рост!';
+      }
+
+      if (!payload.weight_kg || payload.weight_kg < 3 || payload.weight_kg > 200) {
+        return 'Укажите свой вес!';
+      }
+
+      if (!payload.chronic_diseases) {
+        return 'Заполните поле "Хронические заболевания", если у вас нет хронических заболеваний напишите "Нет"!';
+      }
+
+      if (!payload.allergies) {
+        return 'Заполните поле "Аллергические реакции", если у вас нет аллергических реакций напишите "Нет"!';
       }
 
       if (!payload.city) {
-        return 'Выберите город.';
+        return 'Выберите город!';
       }
 
       return '';
@@ -386,6 +408,11 @@
 
     els.profileForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (!els.profileForm.checkValidity()) {
+        els.profileForm.reportValidity();
+        return;
+      }
 
       const payload = buildPayload();
       const validationError = validatePayload(payload);
@@ -397,7 +424,7 @@
 
       try {
         els.submitBtn.disabled = true;
-        setStatus('Сохраняем профиль...');
+        setStatus('Сохраняем анкету...');
 
         const response = await fetch(SAVE_PROFILE_URL, {
           method: 'POST',
@@ -408,10 +435,10 @@
         });
 
         if (!response.ok) {
-          throw new Error('Ошибка при сохранении профиля');
+          throw new Error('Ошибка при сохранении анкеты, повторите попытку позже!');
         }
 
-        setStatus('Профиль успешно сохранен.');
+        setStatus('Анкета успешно сохранена!');
 
         setTimeout(() => {
           if (tg) {
@@ -420,7 +447,7 @@
         }, 700);
       } catch (error) {
         console.error(error);
-        setStatus('Не удалось сохранить профиль.', true);
+        setStatus('Не удалось сохранить анкету!', true);
       } finally {
         els.submitBtn.disabled = false;
       }
